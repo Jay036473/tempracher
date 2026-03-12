@@ -25,7 +25,7 @@ st.title("🌧 Rain Prediction ML App")
 # ===============================
 @st.cache_data
 def load_data():
-    df = pd.read_csv("weth.csv")
+    df = pd.read_csv("D:/PythonProject/csv/weth.csv")
     if 'Date' in df.columns:
         df = df.drop(columns=['Date'])
     df = df.dropna()
@@ -78,8 +78,8 @@ model = train_model(X_encoded, y_encoded)
 # ===============================
 # CREATE TABS FOR BETTER UI
 # ===============================
-# We create 2 tabs: One for the App, One for the Charts
-tab1, tab2 = st.tabs(["🔮 Prediction App", "📊 Data Visualizations (6 Charts)"])
+# We create 3 tabs: App, Charts, and Data Preview
+tab1, tab2, tab3 = st.tabs(["🔮 Prediction App", "📊 Data Visualizations (6 Charts)", "📋 Data Preview"])
 
 # ===============================
 # TAB 1: PREDICTION APP
@@ -187,5 +187,19 @@ with tab2:
         cols_to_plot = [c for c in cols_to_plot if c in df.columns]  # Ensure they exist
         sns.heatmap(df[cols_to_plot].corr(), annot=True, cmap='coolwarm', fmt=".2f", ax=ax6)
         ax6.set_title("How numerical features relate to each other")
-
         st.pyplot(fig6)
+
+# ===============================
+# TAB 3: DATA PREVIEW
+# ===============================
+with tab3:
+    st.header("📋 Dataset Preview")
+
+    # Display the total rows and columns dynamically
+    st.write(f"This dataset contains **{df.shape[0]} rows** and **{df.shape[1]} columns**.")
+
+    st.markdown("---")
+    st.write("Below is the raw weather data used to train the machine learning model:")
+
+    # Display the dataframe as an interactive table
+    st.dataframe(df, use_container_width=True)
