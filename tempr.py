@@ -25,7 +25,7 @@ st.title("🌧 Rain Prediction ML App")
 # ===============================
 @st.cache_data
 def load_data():
-    df = pd.read_csv("D:/PythonProject/csv/weth.csv")
+    df = pd.read_csv("weth.csv")
     if 'Date' in df.columns:
         df = df.drop(columns=['Date'])
     df = df.dropna()
@@ -203,3 +203,4 @@ with tab3:
 
     # Display the dataframe as an interactive table
     st.dataframe(df, use_container_width=True)
+
