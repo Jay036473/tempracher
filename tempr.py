@@ -10,13 +10,15 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
+# New import for classification accuracy
+from sklearn.metrics import accuracy_score
 
 # ===============================
 # TITLE & LAYOUT
 # ===============================
 
 # Set layout to "wide" to use the full width of the screen
-st.set_page_config(page_title="Rain Prediction", layout="wide")
+st.set_page_config(page_title="Rain Prediction", layout="wide", page_icon="🌧")
 st.title("🌧 Rain Prediction ML App")
 
 
@@ -61,7 +63,7 @@ y_encoded = le_target.fit_transform(y)
 
 
 # ===============================
-# TRAIN MODEL (Cached to avoid lag)
+# TRAIN MODEL (UPDATED TO RETURN SCORE)
 # ===============================
 @st.cache_resource
 def train_model(X_train_data, y_train_data):
@@ -70,10 +72,24 @@ def train_model(X_train_data, y_train_data):
     )
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
-    return model
+    
+    # Calculate predictions on the testing data
+    y_pred = model.predict(X_test)
+    
+    # Calculate Accuracy Score
+    accuracy = accuracy_score(y_test, y_pred)
+    
+    return model, accuracy
 
 
-model = train_model(X_encoded, y_encoded)
+# Unpack the model and the score
+model, model_accuracy = train_model(X_encoded, y_encoded)
+
+# ===============================
+# DISPLAY MODEL SCORE (NEW)
+# ===============================
+st.markdown(f'<p style="text-align:center; font-size:22px; color:#00ff9d; margin-bottom:20px;"><strong>🎯 Model Accuracy Score: {model_accuracy:.2%}</strong></p>', unsafe_allow_html=True)
+
 
 # ===============================
 # CREATE TABS FOR BETTER UI
@@ -203,4 +219,3 @@ with tab3:
 
     # Display the dataframe as an interactive table
     st.dataframe(df, use_container_width=True)
-
