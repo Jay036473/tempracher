@@ -25,7 +25,7 @@ st.title("🌧 Rain Prediction ML App")
 # ===============================
 @st.cache_data
 def load_data():
-    df = pd.read_csv("D:/PythonProject/csv/weth.csv")
+    df = pd.read_csv("weth.csv")
     if 'Date' in df.columns:
         df = df.drop(columns=['Date'])
     df = df.dropna()
@@ -187,4 +187,5 @@ with tab2:
         cols_to_plot = [c for c in cols_to_plot if c in df.columns]  # Ensure they exist
         sns.heatmap(df[cols_to_plot].corr(), annot=True, cmap='coolwarm', fmt=".2f", ax=ax6)
         ax6.set_title("How numerical features relate to each other")
+
         st.pyplot(fig6)
