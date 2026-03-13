@@ -9,16 +9,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.ensemble import RandomForestClassifier
-# New import for classification accuracy
-from sklearn.metrics import accuracy_score
+from sklearn.ensemble import GradientBoostingClassifier  # <--- CHANGED IMPORT
 
 # ===============================
 # TITLE & LAYOUT
 # ===============================
 
 # Set layout to "wide" to use the full width of the screen
-st.set_page_config(page_title="Rain Prediction", layout="wide", page_icon="🌧")
+st.set_page_config(page_title="Rain Prediction", layout="wide")
 st.title("🌧 Rain Prediction ML App")
 
 
@@ -63,33 +61,39 @@ y_encoded = le_target.fit_transform(y)
 
 
 # ===============================
-# TRAIN MODEL (UPDATED TO RETURN SCORE)
+# TRAIN MODEL & GET SCORE
 # ===============================
 @st.cache_resource
 def train_model(X_train_data, y_train_data):
     X_train, X_test, y_train, y_test = train_test_split(
         X_train_data, y_train_data, test_size=0.2, random_state=42
     )
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+    # <--- CHANGED MODEL HERE --->
+    model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
     model.fit(X_train, y_train)
-    
-    # Calculate predictions on the testing data
-    y_pred = model.predict(X_test)
-    
-    # Calculate Accuracy Score
-    accuracy = accuracy_score(y_test, y_pred)
-    
-    return model, accuracy
+
+    # Calculate the accuracy score on the test data
+    score = model.score(X_test, y_test)
+
+    return model, score
 
 
-# Unpack the model and the score
-model, model_accuracy = train_model(X_encoded, y_encoded)
+# Unpack both the model and the score
+model, model_score = train_model(X_encoded, y_encoded)
 
 # ===============================
-# DISPLAY MODEL SCORE (NEW)
+# DISPLAY MODEL SCORE
 # ===============================
-st.markdown(f'<p style="text-align:center; font-size:22px; color:#00ff9d; margin-bottom:20px;"><strong>🎯 Model Accuracy Score: {model_accuracy:.2%}</strong></p>', unsafe_allow_html=True)
-
+# Adding a custom styled box for the score above the tabs
+st.markdown(
+    f"""
+    <div style="background-color: #1e3a8a; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 25px;">
+        <h3 style="color: #60a5fa; margin: 0;">🎯 Gradient Boosting Accuracy Score: {model_score * 100:.2f}%</h3>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # ===============================
 # CREATE TABS FOR BETTER UI
@@ -178,6 +182,7 @@ with tab2:
     with chart_col4:
         st.subheader("4. Top 10 Feature Importances")
         fig4, ax4 = plt.subplots()
+        # Gradient Boosting also has feature_importances_, so this works perfectly!
         importances = pd.Series(model.feature_importances_, index=X.columns).nlargest(10)
         sns.barplot(x=importances.values, y=importances.index, palette='viridis', ax=ax4)
         ax4.set_title("Which factors help the model predict best?")
