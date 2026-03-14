@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.ensemble import GradientBoostingClassifier  # <--- CHANGED IMPORT
+from sklearn.ensemble import GradientBoostingClassifier
 
 # ===============================
 # TITLE & LAYOUT
@@ -69,7 +69,6 @@ def train_model(X_train_data, y_train_data):
         X_train_data, y_train_data, test_size=0.2, random_state=42
     )
 
-    # <--- CHANGED MODEL HERE --->
     model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
     model.fit(X_train, y_train)
 
@@ -82,18 +81,6 @@ def train_model(X_train_data, y_train_data):
 # Unpack both the model and the score
 model, model_score = train_model(X_encoded, y_encoded)
 
-# ===============================
-# DISPLAY MODEL SCORE
-# ===============================
-# Adding a custom styled box for the score above the tabs
-st.markdown(
-    f"""
-    <div style="background-color: #1e3a8a; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 25px;">
-        <h3 style="color: #60a5fa; margin: 0;">🎯 Gradient Boosting Accuracy Score: {model_score * 100:.2f}%</h3>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
 # ===============================
 # CREATE TABS FOR BETTER UI
@@ -124,6 +111,9 @@ with tab1:
 
     st.markdown("---")
 
+    # ===============================
+    # PREDICTION (Score moved here!)
+    # ===============================
     if st.button("Predict Rain Tomorrow", use_container_width=True):
         input_data = []
 
@@ -138,6 +128,17 @@ with tab1:
         prediction = model.predict(input_array)
         predicted_label = le_target.inverse_transform(prediction)[0]
 
+        # Display the Model Accuracy Score first
+        st.markdown(
+            f"""
+            <div style="background-color: #1e3a8a; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 25px;">
+                <h3 style="color: #60a5fa; margin: 0;">🎯 Gradient Boosting Accuracy Score: {model_score * 100:.2f}%</h3>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # Then display the Prediction Result
         if predicted_label == 'Yes':
             st.error("🌧 Yes, High Chances of Rain Tomorrow!")
         else:
@@ -182,7 +183,6 @@ with tab2:
     with chart_col4:
         st.subheader("4. Top 10 Feature Importances")
         fig4, ax4 = plt.subplots()
-        # Gradient Boosting also has feature_importances_, so this works perfectly!
         importances = pd.Series(model.feature_importances_, index=X.columns).nlargest(10)
         sns.barplot(x=importances.values, y=importances.index, palette='viridis', ax=ax4)
         ax4.set_title("Which factors help the model predict best?")
@@ -203,9 +203,8 @@ with tab2:
     with chart_col6:
         st.subheader("6. Correlation Heatmap")
         fig6, ax6 = plt.subplots(figsize=(8, 6))
-        # Selecting top numeric columns to keep the heatmap clean
         cols_to_plot = ['MinTemp', 'MaxTemp', 'Rainfall', 'Humidity9am', 'Humidity3pm', 'Pressure3pm']
-        cols_to_plot = [c for c in cols_to_plot if c in df.columns]  # Ensure they exist
+        cols_to_plot = [c for c in cols_to_plot if c in df.columns]
         sns.heatmap(df[cols_to_plot].corr(), annot=True, cmap='coolwarm', fmt=".2f", ax=ax6)
         ax6.set_title("How numerical features relate to each other")
         st.pyplot(fig6)
@@ -216,11 +215,9 @@ with tab2:
 with tab3:
     st.header("📋 Dataset Preview")
 
-    # Display the total rows and columns dynamically
     st.write(f"This dataset contains **{df.shape[0]} rows** and **{df.shape[1]} columns**.")
 
     st.markdown("---")
     st.write("Below is the raw weather data used to train the machine learning model:")
 
-    # Display the dataframe as an interactive table
     st.dataframe(df, use_container_width=True)
